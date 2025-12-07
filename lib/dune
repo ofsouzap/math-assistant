@@ -5,5 +5,15 @@
 
 (library
  (name math_assistant)
- (modules command_input command_input_lexer command_input_parser)
- (libraries core quickterface))
+ (modules
+  command_input
+  command_input_lexer
+  command_input_parser
+  latex_builder
+  constant
+  expr
+  expr_manipulations_intf
+  expr_manipulations)
+ (libraries core quickterface)
+ (preprocess
+  (pps ppx_jane)))

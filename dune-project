@@ -18,4 +18,4 @@
 (package
  (name math-assistant)
  (synopsis "Math assistant thingy")
- (depends ocaml core lwt quickterface))
+ (depends ocaml core alcotest lwt quickterface))
