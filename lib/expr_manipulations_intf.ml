@@ -21,8 +21,9 @@ end
 
 module type S = sig
   module Manipulation : module type of Manipulation
+  module Flatten_sums_and_products : Manipulation.S with type make_args := unit
 
-  (* module Flatten_sums_and_products : Manipulation.S with type make_args := unit *)
+  (* module Distribute_products_over_sums : Manipulation.S with type make_args := unit *)
   module Reduce_constants : Manipulation.S with type make_args := unit
   (* module Reduce_direct_fractions : Manipulation.S with type make_args := unit
 
