@@ -1,0 +1,9 @@
+(ocamllex command_input_lexer)
+
+(menhir
+ (modules command_input_parser))
+
+(library
+ (name math_assistant)
+ (modules command_input command_input_lexer command_input_parser)
+ (libraries core quickterface))
