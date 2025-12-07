@@ -36,6 +36,7 @@ module Flatten_sums_and_products = struct
           Pow { base = flatten base; exponent = flatten exponent }
       | E_pow exponent -> E_pow (flatten exponent)
       | Frac (num, denom) -> Frac (flatten num, flatten denom)
+      | Derivative { expr; var } -> Derivative { expr = flatten expr; var }
     in
     fun () -> flatten
 end
@@ -139,4 +140,12 @@ module Reduce_constants = struct
         Pow { base = apply t base; exponent = apply t exponent }
     | E_pow exponent -> E_pow (apply t exponent)
     | Frac (num, denom) -> Frac (apply t num, apply t denom)
+    | Derivative { expr; var } -> Derivative { expr = apply t expr; var }
+end
+
+module Take_derivative = struct
+  type t = { variable : Variable.t }
+
+  let make variable = { variable }
+  let apply { variable } expr = Expr.Derivative { expr; var = variable }
 end

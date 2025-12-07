@@ -25,8 +25,10 @@ module type S = sig
 
   (* module Distribute_products_over_sums : Manipulation.S with type make_args := unit *)
   module Reduce_constants : Manipulation.S with type make_args := unit
-  (* module Reduce_direct_fractions : Manipulation.S with type make_args := unit
 
-  module Substitute_variable :
+  (* module Reduce_direct_fractions : Manipulation.S with type make_args := unit *)
+  (* module Substitute_variable :
     Manipulation.S with type make_args := string * Expr.t *)
+
+  module Take_derivative : Manipulation.S with type make_args := Variable.t
 end

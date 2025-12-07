@@ -8,6 +8,7 @@ let expr_testable = Expr.For_testing.testable
 let int_lit x = Expr.Constant (Constant.Int_lit x)
 let pi = Expr.Constant Constant.Pi
 let e = Expr.Constant Constant.E
+let var varname = Expr.Var (Variable.Variable varname)
 
 let test_flatten_nested_addition () =
   let flattener = F.make () in
@@ -83,7 +84,7 @@ let test_flatten_deeply_nested_multiplication () =
 
 let test_flatten_mixed_constants () =
   let flattener = F.make () in
-  let var_x = Expr.Var "x" in
+  let var_x = var "x" in
 
   (* Test: (pi + e) + (x + pi) should become pi + e + x + pi *)
   let expr = Expr.Add [ Expr.Add [ pi; e ]; Expr.Add [ var_x; pi ] ] in
@@ -99,7 +100,7 @@ let test_flatten_mixed_constants () =
 
 let test_flatten_non_nested_unchanged () =
   let flattener = F.make () in
-  let var_x = Expr.Var "x" in
+  let var_x = var "x" in
 
   (* Test: flat addition stays flat *)
   let expr = Expr.Add [ int_lit 1; pi; var_x ] in

@@ -8,6 +8,7 @@ let expr_testable = Expr.For_testing.testable
 let int_lit x = Expr.Constant (Constant.Int_lit x)
 let pi = Expr.Constant Constant.Pi
 let e = Expr.Constant Constant.E
+let var varname = Expr.Var (Variable.Variable varname)
 
 let test_reduce_int_lits_addition () =
   let reducer = R.make () in
@@ -97,7 +98,7 @@ let test_reduce_e_multiplication () =
 
 let test_reduce_combined_addition () =
   let reducer = R.make () in
-  let var_x = Expr.Var "x" in
+  let var_x = var "x" in
 
   (* Test: 2 + 3 + pi + pi + e + x should become 5 + 2*pi + e + x *)
   let expr = Expr.Add [ int_lit 2; int_lit 3; pi; pi; e; var_x ] in
@@ -118,7 +119,7 @@ let test_reduce_combined_addition () =
 
 let test_reduce_combined_multiplication () =
   let reducer = R.make () in
-  let var_x = Expr.Var "x" in
+  let var_x = var "x" in
 
   (* Test: 2 * 3 * pi * pi * e * x should become 6 * pi^2 * e * x *)
   let expr = Expr.Mul [ int_lit 2; int_lit 3; pi; pi; e; var_x ] in

@@ -11,6 +11,7 @@
   command_input_parser
   latex_builder
   constant
+  variable
   expr
   expr_manipulations_intf
   expr_manipulations)
