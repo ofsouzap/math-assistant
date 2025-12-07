@@ -8,7 +8,7 @@ type t =
   | Pow of { base : t; exponent : t }
   | E_pow of t
   | Frac of t * t
-[@@deriving equal]
+[@@deriving equal, show]
 
 let rec structure_depth = function
   | Constant _ | Var _ -> 0
@@ -61,3 +61,7 @@ let rec latex_of_t =
           ]
   | Frac (num, denom) ->
       Latex_builder.command "frac" [ latex_of_t num; latex_of_t denom ]
+
+module For_testing = struct
+  let testable = Alcotest.testable pp equal
+end

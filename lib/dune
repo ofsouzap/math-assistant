@@ -14,6 +14,6 @@
   expr
   expr_manipulations_intf
   expr_manipulations)
- (libraries core quickterface)
+ (libraries core alcotest quickterface)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_jane ppx_deriving.show)))

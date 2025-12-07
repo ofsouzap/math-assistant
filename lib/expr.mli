@@ -12,6 +12,10 @@ type t =
 (* | Ln of t *)
 (* | Derivative of {expr : t; var : string}
   | Definite_integral of {expr : t; var : string} *)
-[@@deriving equal]
+[@@deriving equal, show]
 
 val latex_of_t : t -> Latex_builder.t
+
+module For_testing : sig
+  val testable : t Alcotest.testable
+end
