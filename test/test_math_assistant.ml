@@ -9,7 +9,8 @@ let () =
         Test_expr_manipulations_reduce_constants.tests );
       ( "Expr Manipulations - Take Derivative",
         Test_expr_manipulations_take_derivative.tests );
-      (* TODO - forgot to add apply derivative tests!! *)
+      ( "Expr Manipulations - Apply Derivative",
+        Test_expr_manipulations_apply_derivatives.tests );
       ( "Expr Manipulations - Evaluate Constant Expressions",
         Test_expr_manipulations_evaluate_constant_expressions.tests );
     ]

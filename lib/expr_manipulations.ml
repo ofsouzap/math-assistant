@@ -107,53 +107,87 @@ module Apply_derivatives = struct
 
   let make () = ()
 
-  let rec take_derivative ~var = function
-    | Expr.Constant _ -> Expr.Constant (Int_lit 0)
+  (** Compute the derivative of an expression with respect to a variable.
+
+      When [take_derivative ~var e = Ok e'], this means that [e'] is the
+      derivative of [e] w.r.t [var] and [e'] must be reduced or otherwise
+      properly transformed. [e'] should never just be [d/d(var) e], as this
+      risks non-termination in other functionality.
+
+      When
+      [take_derivative ~var e = Error `Cannot_reduce_due_to_another_variable],
+      this means that the derivative of [e'] cannot be computed further than
+      just expressing it as the derivative of [e] w.r.t. [var]. This happens,
+      for example, when [e] is a variable that is different to [var]. *)
+  let rec try_take_derivative ~var :
+      Expr.t -> (Expr.t, [ `Cannot_reduce_due_to_another_variable ]) Result.t =
+    function
+    | Expr.Constant _ -> Ok (Expr.Constant (Int_lit 0))
     | Var expr_var ->
-        Constant
-          (Int_lit
-             (if Variable.equal var expr_var then 1
-              else
-                (* This assumes all variables are independent.
-                   Perhaps future iterations will consider functions
-                   of variables here, or perhaps these will be implemented elsewhere *)
-                0))
-    | Add args -> Add (List.map args ~f:(fun arg -> take_derivative ~var arg))
+        if Variable.equal var expr_var then Ok (Constant (Int_lit 1))
+        else
+          (* This assumes all variables could be dependent.
+                   Perhaps future iterations will specify which
+                   variables are functions of which other variables
+                   and that will have to be handled here *)
+          Error `Cannot_reduce_due_to_another_variable
+    | Add args ->
+        Ok
+          (Add
+             (List.map args ~f:(fun arg -> get_derivative_expression ~var arg)))
     | Sub (e_pos, e_neg) ->
-        Sub (take_derivative ~var e_pos, take_derivative ~var e_neg)
+        Ok
+          (Sub
+             ( get_derivative_expression ~var e_pos,
+               get_derivative_expression ~var e_neg ))
     | Mul args ->
-        List.init (List.length args) ~f:(fun i ->
-            let arg_i = List.nth_exn args i in
-            let arg_i_derivative = take_derivative ~var arg_i in
-            let other_args_before = List.take args i in
-            let other_args_after = List.drop args (i + 1) in
-            Expr.Mul
-              (other_args_before @ [ arg_i_derivative ] @ other_args_after))
-        |> Add
+        Ok
+          (List.init (List.length args) ~f:(fun i ->
+               let arg_i = List.nth_exn args i in
+               let arg_i_derivative = get_derivative_expression ~var arg_i in
+               let other_args_before = List.take args i in
+               let other_args_after = List.drop args (i + 1) in
+               Expr.Mul
+                 (other_args_before @ [ arg_i_derivative ] @ other_args_after))
+          |> Add)
     | Frac (num, denom) ->
-        Frac
-          ( Sub
-              ( Mul [ take_derivative ~var num; denom ],
-                Mul [ num; take_derivative ~var denom ] ),
-            Pow { base = denom; exponent = Constant (Int_lit 2) } )
+        Ok
+          (Frac
+             ( Sub
+                 ( Mul [ get_derivative_expression ~var num; denom ],
+                   Mul [ num; get_derivative_expression ~var denom ] ),
+               Pow { base = denom; exponent = Constant (Int_lit 2) } ))
     | Pow { base; exponent } ->
-        (* d/dx f(x)^{g(x)} = f(x)^{g(x)} . g(x) . ln( f(x) ) . [ g'(x) . ln( f(x) ) + f'(x) . g(x) / f(x) ] *)
-        Mul
-          [
-            Pow { base; exponent };
-            exponent;
-            Ln base;
-            Add
-              [
-                Mul [ take_derivative ~var exponent; Ln base ];
-                Frac (Mul [ take_derivative ~var base; exponent ], base);
-              ];
-          ]
-    | E_pow exponent -> Mul [ E_pow exponent; take_derivative ~var exponent ]
-    | Ln arg -> Frac (take_derivative ~var arg, arg)
-    | Derivative { expr; var = new_var } ->
-        let expr_derivative = take_derivative ~var:new_var expr in
-        take_derivative ~var expr_derivative
+        (* d/dx f(x)^{g(x)} = f(x)^{g(x)} . [ g'(x) . ln( f(x) ) + f'(x) . g(x) / f(x) ] *)
+        Ok
+          (Mul
+             [
+               Pow { base; exponent };
+               Add
+                 [
+                   Mul [ get_derivative_expression ~var exponent; Ln base ];
+                   Frac
+                     ( Mul [ get_derivative_expression ~var base; exponent ],
+                       base );
+                 ];
+             ])
+    | E_pow exponent ->
+        Ok (Mul [ E_pow exponent; get_derivative_expression ~var exponent ])
+    | Ln arg -> Ok (Frac (get_derivative_expression ~var arg, arg))
+    | Derivative { expr; var = new_var } -> (
+        match try_take_derivative ~var:new_var expr with
+        | Ok expr_derivative -> try_take_derivative ~var expr_derivative
+        | Error `Cannot_reduce_due_to_another_variable ->
+            Error `Cannot_reduce_due_to_another_variable)
+
+  (** Compute the derivative expression of [e] with respect to [var]. This
+      function sometimes returns the expression [d/d(var) e], without being able
+      to reduce this further *)
+  and get_derivative_expression ~var e =
+    match try_take_derivative ~var e with
+    | Ok res -> res
+    | Error `Cannot_reduce_due_to_another_variable ->
+        Expr.Derivative { expr = e; var }
 
   let rec apply t = function
     | Expr.Constant c -> Expr.Constant c
@@ -166,7 +200,7 @@ module Apply_derivatives = struct
     | Frac (num, denom) -> Frac (apply t num, apply t denom)
     | E_pow exponent -> E_pow (apply t exponent)
     | Ln arg -> Ln (apply t arg)
-    | Derivative { expr; var } -> take_derivative ~var expr
+    | Derivative { expr; var } -> get_derivative_expression ~var expr
 end
 
 module Evaluate_constant_expressions = struct
@@ -358,8 +392,11 @@ module Evaluate_constant_expressions = struct
           | _ ->
               let arg' = eval arg |> expr_of_result in
               Error (Ln arg'))
-      | Derivative { expr; var } ->
-          Apply_derivatives.take_derivative ~var expr |> eval
+      | Derivative { expr; var } -> (
+          match Apply_derivatives.try_take_derivative ~var expr with
+          | Ok expr' -> eval expr'
+          | Error `Cannot_reduce_due_to_another_variable ->
+              Error (Derivative { expr; var }))
 
     and eval_list_expr_with_monoid ~monoid_neutral ~monoid_op
         ~expr_variant_arg_exprs_of_state
