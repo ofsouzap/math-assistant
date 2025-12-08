@@ -27,8 +27,18 @@ module type S = sig
   module Reduce_constants : Manipulation.S with type make_args := unit
 
   (* module Reduce_direct_fractions : Manipulation.S with type make_args := unit *)
+
+  (* module Evaluate_constant_expressions : Manipulation.S with type make_args := unit *)
+
   (* module Substitute_variable :
     Manipulation.S with type make_args := string * Expr.t *)
 
   module Take_derivative : Manipulation.S with type make_args := Variable.t
+  module Apply_derivatives : Manipulation.S with type make_args := unit
+
+  (* module Convert_to_e_pow_and_ln_where_possible : Manipulation.S with type make_args := unit *)
+
+  (* module Auto_simplifiers : sig
+    module Simple : Manipulation.S with type make_args := unit
+  end *)
 end

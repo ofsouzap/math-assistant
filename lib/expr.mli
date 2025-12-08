@@ -4,14 +4,15 @@ type t =
   | Constant of Constant.t
   | Var of Variable.t
   | Add of t list
+  | Sub of t * t
   | Mul of t list
+  | Frac of t * t
   | Pow of { base : t; exponent : t }
   | E_pow of t
-  | Frac of t * t
   (* | Log of {base: t; arg: t} *)
-  (* | Ln of t *)
+  | Ln of t
   | Derivative of { expr : t; var : Variable.t }
-    (* | Definite_integral of {expr : t; var : string} *)
+    (* | Indefinite_integral of {expr : t; var : string} *)
 [@@deriving equal, show]
 
 val latex_of_t : t -> Latex_builder.t
