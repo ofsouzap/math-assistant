@@ -6,6 +6,7 @@
 (library
  (name math_assistant)
  (modules
+  monoid
   command_input
   command_input_lexer
   command_input_parser
@@ -13,6 +14,7 @@
   constant
   variable
   expr
+  compound_constant
   expr_manipulations_intf
   expr_manipulations)
  (libraries core alcotest quickterface)
