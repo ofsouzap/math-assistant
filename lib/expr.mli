@@ -15,6 +15,11 @@ type t =
     (* | Indefinite_integral of {expr : t; var : string} *)
 [@@deriving equal, show]
 
+val free_variables : t -> Variable.Set.t
+(** Compute the set of variables that might be free in an expression. This is
+    only a (safe) approximation due to uncomputed binding constructs, e.g.
+    derivatives. *)
+
 val latex_of_t : t -> Latex_builder.t
 
 module For_testing : sig

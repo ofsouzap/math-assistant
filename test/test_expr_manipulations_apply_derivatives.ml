@@ -79,41 +79,15 @@ let test_derivative_of_product () =
   in
   Alcotest.(check expr_testable) "derivative of product" expected result
 
-let test_derivative_of_power () =
+let test_derivative_of_power_general_case () =
   let manipulation = D.make () in
 
-  (* Test: apply d/dx(x^2) = x^2 * (0 * ln x + (1 * 2) / (x)) *)
-  let expr =
-    Expr.Derivative
-      {
-        expr = Expr.Pow { base = var "x"; exponent = int_lit 2 };
-        var = Variable.Variable "x";
-      }
-  in
-  let result = D.apply manipulation expr in
-  let expected =
-    Expr.Mul
-      [
-        Expr.Pow { base = var "x"; exponent = int_lit 2 };
-        Expr.Add
-          [
-            Mul [ int_lit 0; Ln (var "x") ];
-            Frac (Mul [ int_lit 1; int_lit 2 ], var "x");
-          ];
-      ]
-  in
-  Alcotest.(check expr_testable) "derivative of power" expected result
-
-let test_derivative_of_expression_power () =
-  let manipulation = D.make () in
-
-  (* Test: apply d/dt( (2*x)^(y) ) = (2x)^(y) * ( dy/dt * ln(2x) + (2 * dx/dt * y) / (2x) ) *)
+  (* Test: apply d/dt( (2*x)^(y) ) = (2x)^(y) * ( dy/dt * ln(2x) + ((0 * x + 2 * dx/dt) * y) / (2x) ) *)
   let expr =
     Expr.Derivative
       {
         expr =
-          Expr.Pow
-            { base = Mul [ int_lit 2; var "x" ]; exponent = Mul [ var "y" ] };
+          Expr.Pow { base = Mul [ int_lit 2; var "x" ]; exponent = var "y" };
         var = Variable.Variable "t";
       }
   in
@@ -121,7 +95,7 @@ let test_derivative_of_expression_power () =
   let expected =
     Expr.Mul
       [
-        Pow { base = Mul [ int_lit 2; var "x" ]; exponent = Mul [ var "y" ] };
+        Pow { base = Mul [ int_lit 2; var "x" ]; exponent = var "y" };
         Add
           [
             Mul
@@ -132,16 +106,86 @@ let test_derivative_of_expression_power () =
             Frac
               ( Mul
                   [
-                    int_lit 2;
-                    Expr.Derivative
-                      { expr = var "x"; var = Variable.Variable "t" };
+                    Add
+                      [
+                        Mul [ int_lit 0; var "x" ];
+                        Mul
+                          [
+                            int_lit 2;
+                            Expr.Derivative
+                              { expr = var "x"; var = Variable.Variable "t" };
+                          ];
+                      ];
                     var "y";
                   ],
                 Mul [ int_lit 2; var "x" ] );
           ];
       ]
   in
-  Alcotest.(check expr_testable) "derivative of power" expected result
+  Alcotest.(check expr_testable)
+    "derivative of power general case" expected result
+
+let test_derivative_of_power_variable_base_constant_exponent () =
+  let manipulation = D.make () in
+
+  (* Test: apply d/dx(x^3) = 3 * x^(3-1) *)
+  let expr =
+    Expr.Derivative
+      {
+        expr = Expr.Pow { base = var "x"; exponent = int_lit 3 };
+        var = Variable.Variable "x";
+      }
+  in
+  let result = D.apply manipulation expr in
+  let expected =
+    Expr.Mul
+      [
+        int_lit 3; Pow { base = var "x"; exponent = Sub (int_lit 3, int_lit 1) };
+      ]
+  in
+  Alcotest.(check expr_testable)
+    "derivative of x^k (special case)" expected result
+
+let test_derivative_of_power_constant_base_variable_exponent () =
+  let manipulation = D.make () in
+
+  (* Test: apply d/dx(2^x) = 2^x * 1 * ln(2) *)
+  let expr =
+    Expr.Derivative
+      {
+        expr = Expr.Pow { base = int_lit 2; exponent = var "x" };
+        var = Variable.Variable "x";
+      }
+  in
+  let result = D.apply manipulation expr in
+  let expected =
+    Expr.Mul
+      [
+        Pow { base = int_lit 2; exponent = var "x" }; int_lit 1; Ln (int_lit 2);
+      ]
+  in
+  Alcotest.(check expr_testable)
+    "derivative of k^x (special case)" expected result;
+
+  (* Test: apply d/dx(pi^(y)) = pi^(y) * d/dx(y) * ln(pi) *)
+  let expr2 =
+    Expr.Derivative
+      {
+        expr = Expr.Pow { base = pi; exponent = var "y" };
+        var = Variable.Variable "x";
+      }
+  in
+  let result2 = D.apply manipulation expr2 in
+  let expected2 =
+    Expr.Mul
+      [
+        Pow { base = pi; exponent = var "y" };
+        Expr.Derivative { expr = var "y"; var = Variable.Variable "x" };
+        Ln pi;
+      ]
+  in
+  Alcotest.(check expr_testable)
+    "derivative of k^(f(x)) (special case)" expected2 result2
 
 let test_derivative_of_nested_derivative () =
   let manipulation = D.make () in
@@ -190,7 +234,13 @@ let tests =
     ("derivative of variable", `Quick, test_derivative_of_variable);
     ("derivative of sum", `Quick, test_derivative_of_sum);
     ("derivative of product", `Quick, test_derivative_of_product);
-    ("derivative of power", `Quick, test_derivative_of_power);
+    ("derivative of power", `Quick, test_derivative_of_power_general_case);
+    ( "derivative of power (variable base, constant exponent)",
+      `Quick,
+      test_derivative_of_power_variable_base_constant_exponent );
+    ( "derivative of power (constant base, variable exponent)",
+      `Quick,
+      test_derivative_of_power_constant_base_variable_exponent );
     ( "derivative of nested derivative",
       `Quick,
       test_derivative_of_nested_derivative );

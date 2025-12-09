@@ -157,20 +157,46 @@ module Apply_derivatives = struct
                  ( Mul [ get_derivative_expression ~var num; denom ],
                    Mul [ num; get_derivative_expression ~var denom ] ),
                Pow { base = denom; exponent = Constant (Int_lit 2) } ))
-    | Pow { base; exponent } ->
-        (* d/dx f(x)^{g(x)} = f(x)^{g(x)} . [ g'(x) . ln( f(x) ) + f'(x) . g(x) / f(x) ] *)
-        Ok
-          (Mul
-             [
-               Pow { base; exponent };
-               Add
+    | Pow { base; exponent } -> (
+        (* To make things neater, these are a few hard-coded special cases to try avoid using the most general form *)
+        match (base, exponent) with
+        | Var base_var, exponent
+          when Variable.equal var base_var
+               && Set.is_empty (Expr.free_variables exponent) ->
+            (* d/dx x^k = k * x^(k-1) *)
+            Ok
+              (Mul
                  [
-                   Mul [ get_derivative_expression ~var exponent; Ln base ];
-                   Frac
-                     ( Mul [ get_derivative_expression ~var base; exponent ],
-                       base );
-                 ];
-             ])
+                   exponent;
+                   Pow
+                     {
+                       base = Var base_var;
+                       exponent = Sub (exponent, Constant (Int_lit 1));
+                     };
+                 ])
+        | Constant c, exponent ->
+            (* d/dx k^(f(x)) = k^(f(x)) * f'(x) * ln k *)
+            Ok
+              (Mul
+                 [
+                   Pow { base = Constant c; exponent };
+                   get_derivative_expression ~var exponent;
+                   Ln (Constant c);
+                 ])
+        | base, exponent ->
+            (* The most general case: d/dx f(x)^{g(x)} = f(x)^{g(x)} . [ g'(x) . ln( f(x) ) + f'(x) . g(x) / f(x) ] *)
+            Ok
+              (Mul
+                 [
+                   Pow { base; exponent };
+                   Add
+                     [
+                       Mul [ get_derivative_expression ~var exponent; Ln base ];
+                       Frac
+                         ( Mul [ get_derivative_expression ~var base; exponent ],
+                           base );
+                     ];
+                 ]))
     | E_pow exponent ->
         Ok (Mul [ E_pow exponent; get_derivative_expression ~var exponent ])
     | Ln arg -> Ok (Frac (get_derivative_expression ~var arg, arg))
