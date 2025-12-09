@@ -4,6 +4,7 @@
  (modules command_input_parser))
 
 (library
+ (public_name math-assistant)
  (name math_assistant)
  (modules
   monoid
@@ -14,9 +15,7 @@
   constant
   variable
   expr
-  compound_constant
-  expr_manipulations_intf
-  expr_manipulations)
+  compound_constant)
  (libraries core alcotest quickterface)
  (preprocess
   (pps ppx_jane ppx_deriving.show)))

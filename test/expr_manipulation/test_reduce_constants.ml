@@ -1,6 +1,6 @@
 open! Core
-open Math_assistant
-module R = Expr_manipulations.Reduce_constants
+open! Math_assistant
+module R = Math_assistant_expr_manipulation.Reduce_constants
 
 (* Used a lot of AI for test writing *)
 

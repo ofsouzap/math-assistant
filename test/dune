@@ -1,3 +1,0 @@
-(test
- (name test_math_assistant)
- (libraries math_assistant alcotest))

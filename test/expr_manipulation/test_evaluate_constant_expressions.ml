@@ -1,6 +1,6 @@
 open! Core
-open Math_assistant
-module E = Expr_manipulations.Evaluate_constant_expressions
+open! Math_assistant
+module E = Math_assistant_expr_manipulation.Evaluate_constant_expressions
 
 let evaluator = E.make ()
 

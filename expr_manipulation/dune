@@ -1,0 +1,13 @@
+(library
+ (public_name math-assistant.expr-manipulation)
+ (name math_assistant_expr_manipulation)
+ (modules
+  manipulation
+  flatten_sums_and_products
+  reduce_constants
+  take_derivative
+  apply_derivatives
+  evaluate_constant_expressions)
+ (libraries core alcotest quickterface math-assistant)
+ (preprocess
+  (pps ppx_jane ppx_deriving.show)))

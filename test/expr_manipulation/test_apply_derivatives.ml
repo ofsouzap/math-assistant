@@ -1,6 +1,6 @@
 open! Core
-open Math_assistant
-module D = Expr_manipulations.Apply_derivatives
+open! Math_assistant
+module D = Math_assistant_expr_manipulation.Apply_derivatives
 
 (* Used a lot of AI for test writing *)
 

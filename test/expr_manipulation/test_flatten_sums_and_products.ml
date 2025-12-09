@@ -1,6 +1,6 @@
 open! Core
-open Math_assistant
-module F = Expr_manipulations.Flatten_sums_and_products
+open! Math_assistant
+module F = Math_assistant_expr_manipulation.Flatten_sums_and_products
 
 (* Used a lot of AI for test writing *)
 
