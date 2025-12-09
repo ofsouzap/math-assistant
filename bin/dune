@@ -1,4 +1,22 @@
+(library
+ (name math_assistant_app)
+ (modules app)
+ (libraries core quickterface)
+ (preprocess
+  (pps ppx_jane lwt_ppx)))
+
 (executable
- (public_name math-assistant)
- (name main)
- (libraries math_assistant))
+ (name terminal)
+ (modes exe)
+ (modules terminal)
+ (libraries math_assistant_app quickterface.terminal_app core lwt)
+ (preprocess
+  (pps ppx_jane lwt_ppx)))
+
+(executable
+ (name webapp)
+ (modes js)
+ (modules webapp)
+ (libraries math_assistant_app quickterface.web_app core lwt)
+ (preprocess
+  (pps ppx_jane lwt_ppx)))
