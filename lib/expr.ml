@@ -38,48 +38,46 @@ let rec free_variables = function
       (* We cannot know if the variable being differentiated with respect to is free or bound in the derivative *)
       free_variables expr
 
-let rec latex_of_t =
+let rec quickterface_math_of_t =
   (* TODO - determine when brackets are needed and insert them *)
-  let open Latex_builder in
-  let latex_of_monoid ?wrapper subterm_latexs ~op =
+  let _hold_quickterface_math_of_t = quickterface_math_of_t in
+  let open Quickterface_math_builder in
+  let quickterface_math_of_t = _hold_quickterface_math_of_t in
+
+  let of_monoid ?wrapper subterms ~op =
     let wrapper_fn = Option.value wrapper ~default:Fn.id in
-    wrapper_fn (concat (List.intersperse ~sep:(literal op) subterm_latexs))
+    wrapper_fn (concat (List.intersperse ~sep:op subterms))
   in
   function
-  | Constant c -> Constant.latex_of_t c
-  | Var var -> Variable.latex_of_t var
+  | Constant c -> Constant.quickterface_math_of_t c
+  | Var var -> Variable.quickterface_math_of_t var
   | Add args ->
-      let term_latexs = List.map ~f:latex_of_t args in
-      latex_of_monoid ~op:"+" term_latexs
+      let term_latexs = List.map ~f:quickterface_math_of_t args in
+      of_monoid ~op:plus term_latexs
   | Sub (e_pos, e_neg) ->
-      let pos_latex = latex_of_t e_pos in
-      let neg_latex = latex_of_t e_neg in
+      let pos_latex = quickterface_math_of_t e_pos in
+      let neg_latex = quickterface_math_of_t e_neg in
       concat [ pos_latex; literal " - "; neg_latex ]
   | Mul args ->
-      let term_latexs = List.map ~f:latex_of_t args in
-      latex_of_monoid ~wrapper:parens ~op:"\\cdot" term_latexs
-  | Frac (num, denom) -> command "frac" [ latex_of_t num; latex_of_t denom ]
+      let term_latexs = List.map ~f:quickterface_math_of_t args in
+      of_monoid ~wrapper:bracketed ~op:times term_latexs
+  | Frac (num, denom) ->
+      frac (quickterface_math_of_t num) (quickterface_math_of_t denom)
   | Pow { base; exponent } ->
-      let base_latex = latex_of_t base in
-      let exponent_latex = latex_of_t exponent in
-      concat [ base_latex; Latex_builder.literal "^"; exponent_latex ]
+      let base_math = quickterface_math_of_t base in
+      let exponent_math = quickterface_math_of_t exponent in
+      superscript_power base_math exponent_math
   | E_pow exponent ->
       let exponent_depth = structure_depth exponent in
-      let exponent_latex = latex_of_t exponent in
+      let exponent_math = quickterface_math_of_t exponent in
       if exponent_depth <= 2 (* This constant is chosen manually *) then
-        concat [ literal "e"; literal "^"; exponent_latex ]
-      else concat [ command "exp" []; square_brackets exponent_latex ]
-  | Ln arg -> command "ln" [ latex_of_t arg ]
+        superscript_power e exponent_math
+      else exponential_single_line exponent_math
+  | Ln arg -> ln (quickterface_math_of_t arg)
   | Derivative { expr; var } ->
-      concat
-        [
-          command "frac"
-            [
-              literal "\\del";
-              concat [ literal "\\del"; Variable.latex_of_t var ];
-            ];
-          latex_of_t expr;
-        ]
+      partial_derivative
+        ~var:(Variable.quickterface_math_of_t var)
+        (quickterface_math_of_t expr)
 
 module For_testing = struct
   let testable = Alcotest.testable pp equal

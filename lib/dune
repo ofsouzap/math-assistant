@@ -1,7 +1,13 @@
 (library
  (public_name math-assistant)
  (name math_assistant)
- (modules monoid latex_builder constant variable expr compound_constant)
- (libraries core alcotest)
+ (modules
+  monoid
+  quickterface_math_builder
+  constant
+  variable
+  expr
+  compound_constant)
+ (libraries core alcotest quickterface)
  (preprocess
   (pps ppx_jane ppx_deriving.show)))

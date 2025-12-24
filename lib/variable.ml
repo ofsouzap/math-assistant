@@ -2,7 +2,8 @@ open! Core
 
 type t = Variable of string [@@deriving equal, compare, sexp, show]
 
-let latex_of_t (Variable name) = Latex_builder.literal name
+let quickterface_math_of_t (Variable name) =
+  Quickterface_math_builder.literal name
 
 let of_string str =
   match

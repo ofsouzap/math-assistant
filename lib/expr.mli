@@ -20,7 +20,7 @@ val free_variables : t -> Variable.Set.t
     only a (safe) approximation due to uncomputed binding constructs, e.g.
     derivatives. *)
 
-val latex_of_t : t -> Latex_builder.t
+val quickterface_math_of_t : t -> Quickterface_math_builder.t
 
 module For_testing : sig
   val testable : t Alcotest.testable
