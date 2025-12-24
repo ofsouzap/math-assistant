@@ -1,21 +1,7 @@
-(ocamllex command_input_lexer)
-
-(menhir
- (modules command_input_parser))
-
 (library
  (public_name math-assistant)
  (name math_assistant)
- (modules
-  monoid
-  command_input
-  command_input_lexer
-  command_input_parser
-  latex_builder
-  constant
-  variable
-  expr
-  compound_constant)
- (libraries core alcotest quickterface)
+ (modules monoid latex_builder constant variable expr compound_constant)
+ (libraries core alcotest)
  (preprocess
   (pps ppx_jane ppx_deriving.show)))

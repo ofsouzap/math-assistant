@@ -8,6 +8,6 @@
   take_derivative
   apply_derivatives
   evaluate_constant_expressions)
- (libraries core alcotest quickterface math-assistant)
+ (libraries core alcotest math-assistant)
  (preprocess
   (pps ppx_jane ppx_deriving.show)))

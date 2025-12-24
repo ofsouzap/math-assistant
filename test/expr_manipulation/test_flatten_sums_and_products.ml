@@ -8,7 +8,7 @@ let expr_testable = Expr.For_testing.testable
 let int_lit x = Expr.Constant (Constant.Int_lit x)
 let pi = Expr.Constant Constant.Pi
 let e = Expr.Constant Constant.E
-let var varname = Expr.Var (Variable.Variable varname)
+let var varname = Expr.Var (Variable.of_string_exn varname)
 
 let test_flatten_nested_addition () =
   let flattener = F.make () in

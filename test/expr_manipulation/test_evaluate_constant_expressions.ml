@@ -10,7 +10,7 @@ let expr_testable = Expr.For_testing.testable
 let int_lit x = Expr.Constant (Constant.Int_lit x)
 let pi = Expr.Constant Constant.Pi
 let e = Expr.Constant Constant.E
-let var varname = Expr.Var (Variable.Variable varname)
+let var varname = Expr.Var (Variable.of_string_exn varname)
 
 (* Tests for full evaluation of constant expressions *)
 
@@ -219,7 +219,7 @@ let test_partial_evaluation_ln () =
 (* Tests for Derivative - should be evaluated *)
 
 let test_evaluate_derivative () =
-  let var_x = Variable.Variable "x" in
+  let var_x = Variable.of_string_exn "x" in
 
   (* Test: d/dx(x) should become 1 *)
   let expr = Expr.Derivative { expr = var "x"; var = var_x } in

@@ -47,7 +47,7 @@ let rec latex_of_t =
   in
   function
   | Constant c -> Constant.latex_of_t c
-  | Var (Variable varname) -> literal varname
+  | Var var -> Variable.latex_of_t var
   | Add args ->
       let term_latexs = List.map ~f:latex_of_t args in
       latex_of_monoid ~op:"+" term_latexs
@@ -70,11 +70,14 @@ let rec latex_of_t =
         concat [ literal "e"; literal "^"; exponent_latex ]
       else concat [ command "exp" []; square_brackets exponent_latex ]
   | Ln arg -> command "ln" [ latex_of_t arg ]
-  | Derivative { expr; var = Variable varname } ->
+  | Derivative { expr; var } ->
       concat
         [
           command "frac"
-            [ literal "\\del"; concat [ literal "\\del"; literal varname ] ];
+            [
+              literal "\\del";
+              concat [ literal "\\del"; Variable.latex_of_t var ];
+            ];
           latex_of_t expr;
         ]
 

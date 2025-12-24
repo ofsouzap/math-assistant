@@ -2,8 +2,7 @@ open! Core
 open! Math_assistant
 
 (** Note that this general signature won't give any nice guarantees about the
-    result of the manipulations. However this would be a pain so I won't do
-    it.contents.
+    result of the manipulations. However this would be a pain so I won't do it.
 
     For example, the integer literal reduction manipulation could be written to
     have an output type that only allows integer literals in at most one
