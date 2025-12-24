@@ -1,7 +1,7 @@
 (library
  (name math_assistant_app)
  (modules app)
- (libraries core quickterface)
+ (libraries core quickterface math-assistant math-assistant.commands)
  (preprocess
   (pps ppx_jane lwt_ppx)))
 
