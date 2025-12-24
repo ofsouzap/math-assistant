@@ -43,37 +43,41 @@ let rec quickterface_math_of_t =
   let _hold_quickterface_math_of_t = quickterface_math_of_t in
   let open Quickterface_math_builder in
   let quickterface_math_of_t = _hold_quickterface_math_of_t in
-
-  let of_monoid ?wrapper subterms ~op =
-    let wrapper_fn = Option.value wrapper ~default:Fn.id in
-    wrapper_fn (concat (List.intersperse ~sep:op subterms))
+  let bracketed_quickterface_math_of_t expr =
+    bracketed (quickterface_math_of_t expr)
   in
+
+  let of_monoid subterms ~op = concat (List.intersperse ~sep:op subterms) in
   function
   | Constant c -> Constant.quickterface_math_of_t c
   | Var var -> Variable.quickterface_math_of_t var
   | Add args ->
-      let term_latexs = List.map ~f:quickterface_math_of_t args in
-      of_monoid ~op:plus term_latexs
+      let term_maths =
+        List.map ~f:(Fn.compose bracketed quickterface_math_of_t) args
+      in
+      of_monoid ~op:plus term_maths
   | Sub (e_pos, e_neg) ->
-      let pos_latex = quickterface_math_of_t e_pos in
-      let neg_latex = quickterface_math_of_t e_neg in
-      concat [ pos_latex; literal " - "; neg_latex ]
+      let pos_math = bracketed_quickterface_math_of_t e_pos in
+      let neg_math = bracketed_quickterface_math_of_t e_neg in
+      concat [ pos_math; literal " - "; neg_math ]
   | Mul args ->
-      let term_latexs = List.map ~f:quickterface_math_of_t args in
-      of_monoid ~wrapper:bracketed ~op:times term_latexs
+      let term_maths = List.map ~f:bracketed_quickterface_math_of_t args in
+      of_monoid ~op:times term_maths
   | Frac (num, denom) ->
-      frac (quickterface_math_of_t num) (quickterface_math_of_t denom)
+      frac
+        (bracketed_quickterface_math_of_t num)
+        (bracketed_quickterface_math_of_t denom)
   | Pow { base; exponent } ->
-      let base_math = quickterface_math_of_t base in
-      let exponent_math = quickterface_math_of_t exponent in
+      let base_math = bracketed_quickterface_math_of_t base in
+      let exponent_math = bracketed_quickterface_math_of_t exponent in
       superscript_power base_math exponent_math
   | E_pow exponent ->
       let exponent_depth = structure_depth exponent in
-      let exponent_math = quickterface_math_of_t exponent in
+      let exponent_math = bracketed_quickterface_math_of_t exponent in
       if exponent_depth <= 2 (* This constant is chosen manually *) then
         superscript_power e exponent_math
       else exponential_single_line exponent_math
-  | Ln arg -> ln (quickterface_math_of_t arg)
+  | Ln arg -> ln (bracketed_quickterface_math_of_t arg)
   | Derivative { expr; var } ->
       partial_derivative
         ~var:(Variable.quickterface_math_of_t var)
