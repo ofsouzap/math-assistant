@@ -1,7 +1,12 @@
 (library
  (public_name math-assistant.commands)
  (name math_assistant_commands)
- (modules manipulation_command hole_expr command)
+ (modules
+  command_parser_utils_intf
+  command_parser_utils
+  manipulation_command
+  hole_expr
+  command)
  (libraries core re math-assistant math-assistant.expr-manipulation)
  (preprocess
   (pps ppx_jane ppx_deriving.show)))
