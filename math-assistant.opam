@@ -12,6 +12,7 @@ depends: [
   "core"
   "alcotest"
   "lwt"
+  "re"
   "quickterface"
   "odoc" {with-doc}
 ]

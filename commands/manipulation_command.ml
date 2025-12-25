@@ -34,6 +34,15 @@ module Parser = struct
 
   module Command_parsers = struct
     module Helpers = struct
+      let of_regex ~is_match_regex str ~on_match =
+        let re = Re.compile is_match_regex in
+        match Re.exec_opt re str with
+        | None -> `No_match
+        | Some m -> `Yes_match (on_match m)
+
+      let of_regex_str ~is_match_pattern =
+        of_regex ~is_match_regex:(Re.Perl.re is_match_pattern)
+
       let parse_constant string =
         let string = string |> String.strip |> String.lowercase in
         if String.equal string "pi" then Ok Constant.pi
@@ -46,59 +55,46 @@ module Parser = struct
 
     (* TODO - add re library as dependency and use that for some of this stuff *)
 
-    let add string =
-      let prefix = "add " in
-      if String.is_prefix string ~prefix then
-        let const_str =
-          String.drop_prefix string (String.length prefix) |> String.strip
-        in
-        match Helpers.parse_constant const_str with
-        | Ok constant -> `Yes_match (Ok (Add constant))
-        | Error err -> `Yes_match (Error err)
-      else `No_match
+    let add =
+      Helpers.of_regex_str ~is_match_pattern:"^add (.+)$" ~on_match:(fun m ->
+          let open Result.Let_syntax in
+          let const_str = Re.Group.get m 1 in
+          let%map constant = Helpers.parse_constant const_str in
+          Add constant)
 
-    let times string =
-      let prefix = "times " in
-      if String.is_prefix string ~prefix then
-        let const_str =
-          String.drop_prefix string (String.length prefix) |> String.strip
-        in
-        match Helpers.parse_constant const_str with
-        | Ok constant -> `Yes_match (Ok (Times constant))
-        | Error err -> `Yes_match (Error err)
-      else `No_match
+    let times =
+      Helpers.of_regex_str ~is_match_pattern:"^times (.+)$" ~on_match:(fun m ->
+          let open Result.Let_syntax in
+          let const_str = Re.Group.get m 1 in
+          let%map constant = Helpers.parse_constant const_str in
+          Times constant)
 
-    let divide_by string =
-      let prefix = "divide by " in
-      if String.is_prefix string ~prefix then
-        let const_str =
-          String.drop_prefix string (String.length prefix) |> String.strip
-        in
-        match Helpers.parse_constant const_str with
-        | Ok constant -> `Yes_match (Ok (Divide_by constant))
-        | Error err -> `Yes_match (Error err)
-      else `No_match
+    let divide_by =
+      Helpers.of_regex_str ~is_match_pattern:"^divide( by)? (.+)$"
+        ~on_match:(fun m ->
+          let open Result.Let_syntax in
+          let const_str = Re.Group.get m 2 in
+          let%map constant = Helpers.parse_constant const_str in
+          Divide_by constant)
 
-    let apply_derivatives string =
-      if String.(equal (lowercase string) "apply derivatives") then
-        `Yes_match (Ok Apply_derivatives)
-      else `No_match
+    let apply_derivatives =
+      Helpers.of_regex_str ~is_match_pattern:"^apply derivatives$"
+        ~on_match:(fun _ -> Ok Apply_derivatives)
 
-    let evaluate_constant_expressions string =
-      if String.(equal (lowercase string) "eval") then
-        `Yes_match (Ok Evaluate_constant_expressions)
-      else `No_match
+    let evaluate_constant_expressions =
+      Helpers.of_regex_str ~is_match_pattern:"^eval$" ~on_match:(fun _ ->
+          Ok Evaluate_constant_expressions)
 
-    let take_derivative string =
-      let prefix = "derivative " in
-      if String.is_prefix string ~prefix then
-        let var_name =
-          String.drop_prefix string (String.length prefix) |> String.strip
-        in
-        match Variable.of_string var_name with
-        | Ok variable -> `Yes_match (Ok (Take_derivative variable))
-        | Error err -> `Yes_match (Error (Error.Variable_name_error err))
-      else `No_match
+    let take_derivative =
+      Helpers.of_regex_str ~is_match_pattern:"^derivative (.+)$"
+        ~on_match:(fun m ->
+          let open Result.Let_syntax in
+          let const_str = Re.Group.get m 1 in
+          let%map var =
+            Variable.of_string const_str
+            |> Result.map_error ~f:(fun err -> Error.Variable_name_error err)
+          in
+          Take_derivative var)
 
     let parsers =
       [
