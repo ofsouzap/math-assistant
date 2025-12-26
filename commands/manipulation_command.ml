@@ -8,6 +8,7 @@ type t =
   | Apply_derivatives
   | Evaluate_constant_expressions
   | Take_derivative of Variable.t
+[@@deriving equal, show]
 
 let expr_function_of_t =
   let open Math_assistant_expr_manipulation in
@@ -92,3 +93,13 @@ module Parser =
     end)
     (Error)
     (Make_parser)
+
+module For_testing = struct
+  let add c = Add c
+  let times c = Times c
+  let divide_by c = Divide_by c
+  let apply_derivatives = Apply_derivatives
+  let evaluate_constant_expressions = Evaluate_constant_expressions
+  let take_derivative var = Take_derivative var
+  let testable = Alcotest.testable pp equal
+end
