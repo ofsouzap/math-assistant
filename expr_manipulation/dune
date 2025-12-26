@@ -3,8 +3,6 @@
  (name math_assistant_expr_manipulation)
  (modules
   manipulation
-  flatten_sums_and_products
-  reduce_constants
   take_derivative
   apply_derivatives
   evaluate_constant_expressions)

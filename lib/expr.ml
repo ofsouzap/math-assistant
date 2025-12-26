@@ -69,11 +69,11 @@ let rec quickterface_math_of_t =
         (bracketed_quickterface_math_of_t denom)
   | Pow { base; exponent } ->
       let base_math = bracketed_quickterface_math_of_t base in
-      let exponent_math = bracketed_quickterface_math_of_t exponent in
+      let exponent_math = quickterface_math_of_t exponent in
       superscript_power base_math exponent_math
   | E_pow exponent ->
       let exponent_depth = structure_depth exponent in
-      let exponent_math = bracketed_quickterface_math_of_t exponent in
+      let exponent_math = quickterface_math_of_t exponent in
       if exponent_depth <= 2 (* This constant is chosen manually *) then
         superscript_power e exponent_math
       else exponential_single_line exponent_math
