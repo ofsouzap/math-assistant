@@ -159,5 +159,3 @@ module Multiplied_constant = struct
     | [ single ] -> single
     | terms -> Expr.Mul terms
 end
-
-(* TODO next: merge Summed into that other one and same for Mult *)
