@@ -1,3 +1,8 @@
+(ocamllex multihole_expr_lexer)
+
+(menhir
+ (modules multihole_expr_parser))
+
 (library
  (public_name math-assistant.commands)
  (name math_assistant_commands)
@@ -6,7 +11,11 @@
   command_parser_utils
   manipulation_command
   hole_expr
+  multihole_expr_lexer
+  multihole_expr_parser
+  hole_expr_command
   command)
+ (private_modules multihole_expr_lexer multihole_expr_parser)
  (libraries core re math-assistant math-assistant.expr-manipulation)
  (preprocess
   (pps ppx_jane ppx_deriving.show)))

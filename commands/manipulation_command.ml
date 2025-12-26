@@ -26,7 +26,7 @@ module Error = struct
     | Incorrect_syntax of { hint : string; encountered_string : string }
     | Variable_name_error of Sexp.t
     | Cannot_parse_constant_from of string
-  [@@deriving sexp, show]
+  [@@deriving sexp, equal, show]
 
   let no_matching_command str = No_matching_command str
   let cannot_parse_constant_from str = Cannot_parse_constant_from str
