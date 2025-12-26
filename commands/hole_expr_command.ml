@@ -28,17 +28,18 @@ module Make_parser
     (Helpers : Command_parser_utils_intf.Helpers with module Error := Error) =
 struct
   let parse_string string =
-    Multihole_expr_parser.main Multihole_expr_lexer.token
-      (Lexing.from_string string)
+    match
+      Multihole_expr_parser.main Multihole_expr_lexer.token
+        (Lexing.from_string string)
+    with
+    | result -> Ok result
+    | exception Multihole_expr_lexer.Lexer_error err ->
+        Error (Error.Lexer_error err)
 
   let parser string =
     let open Result.Let_syntax in
     let result =
-      let%bind multihole_expr =
-        try Ok (parse_string string)
-        with Multihole_expr_lexer.Lexer_error err ->
-          Error (Error.Lexer_error err)
-      in
+      let%bind multihole_expr = parse_string string in
       let%bind single_hole_expr =
         try
           Ok

@@ -146,7 +146,7 @@ module Single_hole_expr_of_multihole_expr_converter = struct
           List.concat_map
             ~f:(collect_specific_subterms ~find_inside_expr)
             subexprs
-      | None -> []
+      | None -> [ expr ]
     in
     let rec collect_specific_subterms_with_hole expr ~find_inside_expr
         ~find_inside_with_hole =
