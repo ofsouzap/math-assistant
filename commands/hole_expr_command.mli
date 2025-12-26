@@ -12,6 +12,7 @@ module Parser : sig
       | Variable_name_error of Sexp.t
       | Cannot_parse_constant_from of string
       | Lexer_error of string
+      | Other_parsing_error
       | No_hole_found
       | Multiple_holes_found
     [@@deriving sexp, equal, show]

@@ -12,6 +12,7 @@ module Error = struct
     | Variable_name_error of Sexp.t
     | Cannot_parse_constant_from of string
     | Lexer_error of string
+    | Other_parsing_error
     | No_hole_found
     | Multiple_holes_found
   [@@deriving sexp, equal, show]
@@ -35,25 +36,27 @@ struct
     | result -> Ok result
     | exception Multihole_expr_lexer.Lexer_error err ->
         Error (Error.Lexer_error err)
+    | exception _ -> Error Other_parsing_error
 
   let parser string =
     let open Result.Let_syntax in
-    let result =
-      let%bind multihole_expr = parse_string string in
-      let%bind single_hole_expr =
-        try
-          Ok
-            (Single_hole_expr_of_multihole_expr_converter
-             .single_hole_expr_of_multihole_expr multihole_expr)
-        with
-        | Single_hole_expr_of_multihole_expr_converter.No_hole_found ->
-            Error Error.No_hole_found
-        | Single_hole_expr_of_multihole_expr_converter.Multiple_holes_found ->
-            Error Multiple_holes_found
-      in
-      Ok (T single_hole_expr)
-    in
-    `Yes_match result
+    match parse_string string with
+    | Error _ -> `No_match
+    | Ok multihole_expr ->
+        `Yes_match
+          (let%bind single_hole_expr =
+             try
+               Ok
+                 (Single_hole_expr_of_multihole_expr_converter
+                  .single_hole_expr_of_multihole_expr multihole_expr)
+             with
+             | Single_hole_expr_of_multihole_expr_converter.No_hole_found ->
+                 Error Error.No_hole_found
+             | Single_hole_expr_of_multihole_expr_converter.Multiple_holes_found
+               ->
+                 Error Multiple_holes_found
+           in
+           Ok (T single_hole_expr))
 
   let all_parsers = [ parser ]
 end
